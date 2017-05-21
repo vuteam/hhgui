@@ -4,7 +4,7 @@ from Components.Sources.StaticText import StaticText
 from Components.Harddisk import harddiskmanager
 from Components.NimManager import nimmanager
 from Components.About import about
-import os
+
 
 from Tools.DreamboxHardware import getFPVersion
 
