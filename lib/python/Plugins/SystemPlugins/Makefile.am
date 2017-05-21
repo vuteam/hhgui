@@ -5,7 +5,7 @@ SUBDIRS = SoftwareManager PositionerSetup Satfinder \
 	DefaultServicesScanner NFIFlash DiseqcTester CommonInterfaceAssignment \
 	CrashlogAutoSubmit CleanupWizard VideoEnhancement WirelessLan NetworkWizard \
 	TempFanControl Fancontrol WirelessLanSetup ManualFancontrol \
-	Blindscan RemoteControlCode UI3DSetup UIPositionSetup HDMICEC LEDBrightnessSetup \
+	RemoteControlCode UI3DSetup UIPositionSetup HDMICEC LEDBrightnessSetup \
 	CrashReport WirelessAccessPoint ZappingModeSelection \
 	DeviceManager WOLSetup NetDrive AudioEffect AnimationSetup \
 	BoxModeConfig Solo4kMiscControl FastChannelChange Ultimo4kMiscControl BlackHoleApi
