@@ -1,4 +1,5 @@
 #include "picexif.h"
+#include <lib/base/cfile.h>
 
 #define M_SOF0  0xC0
 #define M_SOF1  0xC1
@@ -90,9 +91,9 @@ void Cexif::ClearExif()
 
 bool Cexif::DecodeExif(const char *filename, int Thumb)
 {
-	bool ret = false;
-	FILE * hFile = fopen(filename, "r");
-	if(!hFile) return ret;
+	CFile hFile(filename, "rb");
+	if (!hFile)
+		return false;
 
 	m_exifinfo = new EXIFINFO;
 	memset(m_exifinfo,0,sizeof(EXIFINFO));
@@ -107,8 +108,7 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 	int a = fgetc(hFile);
 	strcpy(m_szLastError,"EXIF-Data not found");
 
-	if (a != 0xff || fgetc(hFile) != M_SOI)
-		goto decode_exif_out_false;
+	if (a != 0xff || fgetc(hFile) != M_SOI) return false;
 
 	for(;;)
 	{
@@ -118,8 +118,7 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 
 		if (SectionsRead >= MAX_SECTIONS)
 		{
-			strcpy(m_szLastError,"Too many sections in jpg file");
-			goto decode_exif_out_false;
+			strcpy(m_szLastError,"Too many sections in jpg file"); return false;
 		}
 
 		for (a=0;a<7;a++)
@@ -129,15 +128,13 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 
 			if (a >= 6)
 			{
-				strcpy(m_szLastError,"too many padding unsigned chars\n");
-				goto decode_exif_out_false;
+				strcpy(m_szLastError,"too many padding unsigned chars\n"); return false;
 			}
 		}
 
 		if (marker == 0xff)
 		{
-			strcpy(m_szLastError,"too many padding unsigned chars!");
-			goto decode_exif_out_false;
+			strcpy(m_szLastError,"too many padding unsigned chars!"); return false;
 		}
 
 		Sections[SectionsRead].Type = marker;
@@ -149,16 +146,14 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 
 		if (itemlen < 2)
 		{
-			strcpy(m_szLastError,"invalid marker");
-			goto decode_exif_out_false;
+			strcpy(m_szLastError,"invalid marker"); return false;
 		}
 		Sections[SectionsRead].Size = itemlen;
 
 		Data = (unsigned char *)malloc(itemlen);
 		if (Data == NULL)
 		{
-			strcpy(m_szLastError,"Could not allocate memory");
-			goto decode_exif_out_false;
+			strcpy(m_szLastError,"Could not allocate memory"); return false;
 		}
 		Sections[SectionsRead].Data = Data;
 
@@ -169,18 +164,17 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 		got = fread(Data+2, 1, itemlen-2,hFile);
 		if (got != itemlen-2)
 		{
-			strcpy(m_szLastError,"Premature end of file?");
-			goto decode_exif_out_false;
+			strcpy(m_szLastError,"Premature end of file?"); return false;
 		}
 		SectionsRead += 1;
 
 		switch(marker)
 		{
 		case M_SOS:
-			goto decode_exif_out_true;
+			return true;
 		case M_EOI:
 			printf("No image in jpeg!\n");
-			goto decode_exif_out_false;
+			return false;
 		case M_COM:
 			if (HaveCom)
 			{
@@ -228,12 +222,7 @@ bool Cexif::DecodeExif(const char *filename, int Thumb)
 		}
 	}
 
-decode_exif_out_true:
-	ret = true;
-
-decode_exif_out_false:
-	fclose(hFile);
-	return ret;
+	return true;
 }
 
 bool Cexif::process_EXIF(unsigned char * CharBuf, unsigned int length)
@@ -630,12 +619,9 @@ void Cexif::process_COM (const unsigned char * Data, int length)
 
 void Cexif::process_SOFn (const unsigned char * Data, int marker)
 {
-	int data_precision, num_components;
-
-	data_precision = Data[2];
 	m_exifinfo->Height = Get16m((void*)(Data+3));
 	m_exifinfo->Width = Get16m((void*)(Data+5));
-	num_components = Data[7];
+	unsigned char num_components = Data[7];
 
 	if (num_components == 3) strcpy(m_exifinfo->IsColor,"yes");
 	else strcpy(m_exifinfo->IsColor,"no");
