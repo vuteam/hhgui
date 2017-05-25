@@ -10,6 +10,7 @@ libenigma_base_a_SOURCES = \
 	buffer.cpp \
 	connection.cpp \
 	console.cpp \
+	cfile.cpp \
 	ebase.cpp \
 	eenv.cpp \
 	eerror.cpp \
@@ -35,6 +36,7 @@ baseincludedir = $(pkgincludedir)/lib/base
 baseinclude_HEADERS = \
 	buffer.h \
 	console.h \
+	cfile.h \
 	ebase.h \
 	eenv.h \
 	eerror.h \
