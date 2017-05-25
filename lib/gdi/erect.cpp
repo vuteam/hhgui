@@ -5,14 +5,6 @@
   eRect member functions
  *****************************************************************************/
 
-eRect::eRect( const ePoint &topLeft, const ePoint &bottomRight )
-{
-	x1 = topLeft.x();
-	y1 = topLeft.y();
-	x2 = bottomRight.x();
-	y2 = bottomRight.y();
-}
-
 eRect eRect::normalize() const
 {
 	eRect r;
@@ -203,12 +195,12 @@ bool operator!=( const eRect &r1, const eRect &r2 )
 	return r1.x1!=r2.x1 || r1.x2!=r2.x2 || r1.y1!=r2.y1 || r1.y2!=r2.y2;
 }
 
-void eRect::scale(int x_n, int x_d, int y_n, int y_d) 
+void eRect::scale(int x_n, int x_d, int y_n, int y_d)
 {
 	ASSERT(x_d); ASSERT(y_d);
-	x1 *= x_n; x1 /= x_d; 
-	x2 *= x_n; x2 /= x_d; 
-	y1 *= y_n; y1 /= y_d; 
-	y2 *= y_n; y2 /= y_d; 
+	x1 *= x_n; x1 /= x_d;
+	x2 *= x_n; x2 /= x_d;
+	y1 *= y_n; y1 /= y_d;
+	y2 *= y_n; y2 /= y_d;
 }
 
