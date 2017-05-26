@@ -8,75 +8,67 @@
 #include <lib/base/ebase.h>
 
 #ifndef SWIG
-struct Cfilepara
+class Cfilepara
 {
-	char *file;
-	unsigned char *pic_buffer;
-	gRGB *palette;
-	int palette_size;
-	int bits;
-	int id;
+public:
 	int max_x;
 	int max_y;
+	bool callback;
+	
+	const char *file;
+	int id;
 	int ox;
 	int oy;
+	unsigned char *pic_buffer;
 	std::string picinfo;
-	bool callback;
-
-	Cfilepara(const char *mfile, int mid, std::string size):
-		file(strdup(mfile)),
-		pic_buffer(NULL),
-		palette(NULL),
-		palette_size(0),
-		bits(24),
-		id(mid),
-		max_x(0),
-		max_y(0),
-		ox(0),
-		oy(0),
-		picinfo(mfile),
-		callback(true)
+	int bypp;
+	
+	Cfilepara(const char *mfile, int mid, std::string size)
 	{
-		picinfo += "\n" + size + "\n";
+		file = strdup(mfile);
+		id = mid;
+		pic_buffer = NULL;
+		callback = true;
+		bypp = 3;
+		picinfo = mfile;
+		picinfo += + "\n" + size + "\n";
 	}
-
+	
 	~Cfilepara()
 	{
-		if (pic_buffer != NULL)	delete pic_buffer;
-		if (palette != NULL) delete palette;
-		free(file);
+		if(pic_buffer != NULL)	delete pic_buffer;
+		picinfo.clear();
 	}
-
+	
 	void addExifInfo(std::string val) { picinfo += val + "\n"; }
 };
 #endif
 
-class ePicLoad: public eMainloop, public eThread, public sigc::trackable, public iObject
+class ePicLoad: public eMainloop, public eThread, public Object, public iObject
 {
 	DECLARE_REF(ePicLoad);
 
 	enum{ F_PNG, F_JPEG, F_BMP, F_GIF};
-
+	
 	void decodePic();
 	void decodeThumb();
 	void resizePic();
 
 	Cfilepara *m_filepara;
 	bool threadrunning;
-
+	
 	struct PConf
 	{
 		int max_x;
 		int max_y;
 		double aspect_ratio;
-		unsigned int background;
+		unsigned char background[4];
 		bool resizetype;
 		bool usecache;
 		int thumbnailsize;
 		int test;
-		PConf();
 	} m_conf;
-
+	
 	struct Message
 	{
 		int type;
@@ -85,7 +77,6 @@ class ePicLoad: public eMainloop, public eThread, public sigc::trackable, public
 			decode_Pic,
 			decode_Thumb,
 			decode_finished,
-			decode_error,
 			quit
 		};
 		Message(int type=0)
@@ -103,16 +94,15 @@ public:
 
 	ePicLoad();
 	~ePicLoad();
-
+	
 	RESULT startDecode(const char *filename, int x=0, int y=0, bool async=true);
 	RESULT getThumbnail(const char *filename, int x=0, int y=0, bool async=true);
 	RESULT setPara(PyObject *val);
-	RESULT setPara(int width, int height, double aspectRatio, int as, bool useCache, int resizeType, const char *bg_str);
 	PyObject *getInfo(const char *filename);
 	SWIG_VOID(int) getData(ePtr<gPixmap> &SWIG_OUTPUT);
 };
 
 //for old plugins
-SWIG_VOID(int) loadPic(ePtr<gPixmap> &SWIG_OUTPUT, std::string filename, int x, int y, int aspect, int resize_mode=0, int rotate=0, unsigned int background=0, std::string cachefile="");
+SWIG_VOID(int) loadPic(ePtr<gPixmap> &SWIG_OUTPUT, std::string filename, int x, int y, int aspect, int resize_mode=0, int rotate=0, int background=0, std::string cachefile="");
 
 #endif // __picload_h__
